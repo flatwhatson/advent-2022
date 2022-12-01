@@ -23,29 +23,20 @@
   (let loop ((lines (string-split str #\newline)) (vals '()) (result '()))
     (match lines
       ('()
-       (if (null? vals)
-           (reverse result)
-           (reverse (cons (reverse vals) result))))
+       (reverse (cons (reverse vals) result)))
       (("" . rest)
        (loop rest '() (cons (reverse vals) result)))
       ((num . rest)
        (loop rest (cons (string->number num) vals) result)))))
 
+(define (list-sum vals)
+  (apply + vals))
+
 (define (largest-calorie-sum data)
-  (apply max (map (lambda (vals)
-                    (apply + vals))
-                  data)))
+  (apply max (map list-sum data)))
 
 (define (top-calorie-sums n data)
-  (let loop ((data data) (top '()))
-    (match data
-      ('() top)
-      ((vals . rest)
-       (let* ((sum (apply + vals))
-              (top (if (< (length top) n)
-                       (sort (cons sum top) >)
-                       (take (sort (cons sum top) >) n))))
-         (loop rest top))))))
+  (take (sort (map list-sum data) >) n))
 
 (define (puzzle-0)
   (largest-calorie-sum (parse-calories %example)))
@@ -58,4 +49,4 @@
 (define (puzzle-2)
   (define %input (call-with-input-file "data/input-01" get-string-all))
   (define %data (parse-calories %input))
-  (apply + (top-calorie-sums 3 %data)))
+  (list-sum (top-calorie-sums 3 %data)))
