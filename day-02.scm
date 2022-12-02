@@ -54,3 +54,9 @@ C Z
   (let* ((rounds (parse-rounds %example))
          (scores (map (cut apply round-score <>) rounds)))
     (apply + scores)))
+
+(define (puzzle-1)
+  (let* ((input (call-with-input-file "data/input-02" get-string-all))
+         (rounds (parse-rounds input))
+         (scores (map (cut apply round-score <>) rounds)))
+    (apply + scores)))
