@@ -21,13 +21,13 @@ C Z
     ("Y" 'paper)
     ("Z" 'scissors)))
 
-(define (parse-rounds str)
+(define* (parse-rounds str #:optional (parse-my-strategy parse-my-shape))
   (fold-right
    (lambda (line acc)
      (if (string-null? line) acc
          (let* ((tokens (string-split line #\space))
                 (theirs (parse-their-shape (first tokens)))
-                (mine (parse-my-shape (second tokens))))
+                (mine (parse-my-strategy (second tokens))))
            (cons (list mine theirs) acc))))
    '() (string-split str #\newline)))
 
@@ -59,4 +59,38 @@ C Z
   (let* ((input (call-with-input-file "data/input-02" get-string-all))
          (rounds (parse-rounds input))
          (scores (map (cut apply round-score <>) rounds)))
+    (apply + scores)))
+
+(define parse-lose-draw-win
+  (match-lambda
+    ("X" 'lose)
+    ("Y" 'draw)
+    ("Z" 'win)))
+
+(define select-win
+  (match-lambda
+    ('rock 'paper)
+    ('paper 'scissors)
+    ('scissors 'rock)))
+
+(define select-lose
+  (match-lambda
+    ('rock 'scissors)
+    ('paper 'rock)
+    ('scissors 'paper)))
+
+(define (select-shape strategy theirs)
+  (match strategy
+    ('win (select-win theirs))
+    ('lose (select-lose theirs))
+    ('draw theirs)))
+
+(define (round-score-2 my-strat theirs)
+  (let ((mine (select-shape my-strat theirs)))
+    (round-score mine theirs)))
+
+(define (puzzle-2)
+  (let* ((input (call-with-input-file "data/input-02" get-string-all))
+         (rounds (parse-rounds input parse-lose-draw-win))
+         (scores (map (cut apply round-score-2 <>) rounds)))
     (apply + scores)))
