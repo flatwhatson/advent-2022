@@ -44,3 +44,12 @@ CrZsJsPPZsGzwwsLwLmpwMDw
                  (dup (first (find-duplicate-chars a b))))
             (+ acc (char->priority dup))))
         0 (string->lines %example)))
+
+(define (puzzle-1)
+  (fold (lambda (str acc)
+          (let* ((a b (string-split-evenly str))
+                 (dup (first (find-duplicate-chars a b))))
+            (+ acc (char->priority dup))))
+        0 (string->lines
+           (call-with-input-file "data/input-03"
+             get-string-all))))
