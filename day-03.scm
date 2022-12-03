@@ -60,6 +60,5 @@ CrZsJsPPZsGzwwsLwLmpwMDw
   (let loop ((lines %lines) (acc 0))
     (if (null? lines) acc
         (let* ((group rest (split-at lines 3))
-               (a b c (apply values group))
-               (badge (first (find-duplicate-chars a b c))))
+               (badge (first (apply find-duplicate-chars group))))
           (loop rest (+ acc (char->priority badge)))))))
