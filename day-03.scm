@@ -22,11 +22,10 @@ CrZsJsPPZsGzwwsLwLmpwMDw
     (values (substring str 0 mid)
             (substring str mid len))))
 
-(define (find-duplicate-chars a b)
+(define (find-duplicate-chars . strs)
   (char-set->list
-   (char-set-intersection
-    (string->char-set a)
-    (string->char-set b))))
+   (apply char-set-intersection
+          (map string->char-set strs))))
 
 (define (char->priority c)
   (let ((i (char->integer c))
@@ -53,3 +52,14 @@ CrZsJsPPZsGzwwsLwLmpwMDw
         0 (string->lines
            (call-with-input-file "data/input-03"
              get-string-all))))
+
+(define (puzzle-2)
+  (define %lines (string->lines
+                  (call-with-input-file "data/input-03"
+                    get-string-all)))
+  (let loop ((lines %lines) (acc 0))
+    (if (null? lines) acc
+        (let* ((group rest (split-at lines 3))
+               (a b c (apply values group))
+               (badge (first (find-duplicate-chars a b c))))
+          (loop rest (+ acc (char->priority badge)))))))
