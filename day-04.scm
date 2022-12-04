@@ -1,5 +1,4 @@
-(use-modules (ice-9 match)
-             (ice-9 textual-ports)
+(use-modules (ice-9 textual-ports)
              (srfi srfi-1))
 
 (define %example "\
