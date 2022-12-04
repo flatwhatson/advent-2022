@@ -31,3 +31,9 @@
   (count (lambda (nums)
            (apply full-overlap? nums))
          (parse-input %example)))
+
+(define (puzzle-1)
+  (count (lambda (nums)
+           (apply full-overlap? nums))
+         (parse-input (call-with-input-file "data/input-04"
+                        get-string-all))))
