@@ -27,6 +27,12 @@
   (or (<= a1 b1 b2 a2)
       (<= b1 a1 a2 b2)))
 
+(define (part-overlap? a1 a2 b1 b2)
+  (or (<= a1 b1 a2)
+      (<= a1 b2 a2)
+      (<= b1 a1 b2)
+      (<= b1 a2 b2)))
+
 (define (puzzle-0)
   (count (lambda (nums)
            (apply full-overlap? nums))
@@ -35,5 +41,11 @@
 (define (puzzle-1)
   (count (lambda (nums)
            (apply full-overlap? nums))
+         (parse-input (call-with-input-file "data/input-04"
+                        get-string-all))))
+
+(define (puzzle-2)
+  (count (lambda (nums)
+           (apply part-overlap? nums))
          (parse-input (call-with-input-file "data/input-04"
                         get-string-all))))
