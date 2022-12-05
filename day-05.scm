@@ -26,7 +26,7 @@ move 1 from 1 to 2
    number <-  [0-9]+
 
    stack-row    <- (blank space?/crate space?)+ newline
-   stack-labels <  (space* number+)+ newline
+   stack-labels <  (space* number+ space*)+ newline
    stacks       <-- stack-row+ stack-labels newline
 
    move-label < 'move '
@@ -83,6 +83,16 @@ move 1 from 1 to 2
 
 (define (puzzle-0)
   (match (peg:tree (match-pattern puzzle-input %example))
+    ((('stacks . raw-stacks) ('commands . raw-commands))
+     (let* ((stacks-start (build-stacks raw-stacks))
+            (stacks-end (run-commands stacks-start raw-commands))
+            (top-crates (map first (vector->list stacks-end))))
+       (apply string-append (map second top-crates))))))
+
+(define (puzzle-1)
+  (define %input (call-with-input-file "data/input-05"
+                   get-string-all))
+  (match (peg:tree (match-pattern puzzle-input %input))
     ((('stacks . raw-stacks) ('commands . raw-commands))
      (let* ((stacks-start (build-stacks raw-stacks))
             (stacks-end (run-commands stacks-start raw-commands))
