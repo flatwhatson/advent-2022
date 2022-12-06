@@ -27,9 +27,18 @@
   (for-each (lambda (input)
               (format #t "~a => ~a\n" input
                       (string-scan unique-chars? 4 input)))
+            %examples)
+  (for-each (lambda (input)
+              (format #t "~a => ~a\n" input
+                      (string-scan unique-chars? 14 input)))
             %examples))
 
 (define (puzzle-1)
   (string-scan unique-chars? 4
+               (call-with-input-file "data/input-06"
+                 get-string-all)))
+
+(define (puzzle-2)
+  (string-scan unique-chars? 14
                (call-with-input-file "data/input-06"
                  get-string-all)))
