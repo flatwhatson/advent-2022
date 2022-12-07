@@ -142,8 +142,8 @@ $ ls
            (add-dir-size! parent (file-size file))
            (loop rest root pwd)))))))
 
-(define (filesystem-tree-fold proc init dir)
-  (let loop ((items (list dir)) (result init))
+(define (filesystem-tree-fold proc init tree)
+  (let loop ((items (list tree)) (result init))
     (match items
       (() result)
       ((item . rest)
@@ -152,25 +152,39 @@ $ ls
                  rest)
              (proc item result))))))
 
+(define (filesystem-tree-filter pred tree)
+  (filesystem-tree-fold (lambda (item result)
+                          (if (pred item)
+                              (cons item result)
+                              result))
+                        '() tree))
+
 ;;; Solutions
 
-(define (find-dirs-under size tree)
-  (filesystem-tree-fold
-   (lambda (item result)
-     (if (and (dir? item) (<= (dir-size item) size))
-         (cons item result)
-         result))
-   '() tree))
+(define (find-dirs-with-size cmp size tree)
+  (filesystem-tree-filter (lambda (item)
+                            (and (dir? item)
+                                 (cmp (dir-size item) size)))
+                          tree))
 
 (define (puzzle-0)
   (let* ((commands (parse-terminal-output %example))
          (tree (build-filesystem-tree commands))
-         (dirs (find-dirs-under 100000 tree)))
+         (dirs (find-dirs-with-size <= 100000 tree)))
     (apply + (map dir-size dirs))))
 
 (define (puzzle-1)
   (let* ((input (call-with-input-file "data/input-07" get-string-all))
          (commands (parse-terminal-output input))
          (tree (build-filesystem-tree commands))
-         (dirs (find-dirs-under 100000 tree)))
+         (dirs (find-dirs-with-size <= 100000 tree)))
     (apply + (map dir-size dirs))))
+
+(define (puzzle-2)
+  (let* ((input (call-with-input-file "data/input-07" get-string-all))
+         (commands (parse-terminal-output input))
+         (tree (build-filesystem-tree commands))
+         (unused (- 70000000 (dir-size tree)))
+         (wanted (- 30000000 unused))
+         (dirs (find-dirs-with-size >= wanted tree)))
+    (apply min (map dir-size dirs))))
