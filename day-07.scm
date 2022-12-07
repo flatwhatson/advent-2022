@@ -88,12 +88,6 @@ $ ls
   (set-dir-entries! dir (cons entry (dir-entries dir)))
   (set-dir-size! dir (+ (dir-or-file-size entry) (dir-size dir))))
 
-(define (sort-dir-entries! dir)
-  (set-dir-entries! dir (sort! (dir-entries dir)
-                               (lambda (a b)
-                                 (string<? (dir-or-file-name a)
-                                           (dir-or-file-name b))))))
-
 (define* (print-file file #:optional (indent ""))
   (format #t "~a- ~a (~a)\n" indent (file-name file) (file-size file)))
 
@@ -102,7 +96,10 @@ $ ls
   (for-each (lambda (entry)
               ((if (dir? entry) print-dir print-file)
                entry (string-append indent "  ")))
-            (dir-entries dir)))
+            (sort (dir-entries dir)
+                  (lambda (a b)
+                    (string<? (dir-or-file-name a)
+                              (dir-or-file-name b))))))
 
 ;; Command interpreter
 
@@ -119,7 +116,6 @@ $ ls
        (let* ((dir (car path))
               (path (cdr path))
               (parent (car path)))
-         (sort-dir-entries! dir)
          (add-dir-entry! parent dir)
          (loop cmds path)))
       ((('command-cd name) . cmds)
@@ -133,8 +129,8 @@ $ ls
        (loop cmds path))
       ((('output-file ('filesize size) ('filename name)) . cmds)
        ;; add file to current directory
-       (let ((parent (car path))
-             (file (make-file name (string->number size))))
+       (let ((file (make-file name (string->number size)))
+             (parent (car path)))
          (add-dir-entry! parent file)
          (loop cmds path))))))
 
