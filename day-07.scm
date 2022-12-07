@@ -78,14 +78,15 @@ $ ls
 (define (make-dir name)
   (%make-dir name 0 '()))
 
-(define (add-dir-size! dir extra)
-  (set-dir-size! dir (+ extra (dir-size dir))))
-
-(define (add-dir-entry! dir file)
-  (set-dir-entries! dir (cons file (dir-entries dir))))
-
 (define (dir-or-file-name entry)
   ((if (dir? entry) dir-name file-name) entry))
+
+(define (dir-or-file-size entry)
+  ((if (dir? entry) dir-size file-size) entry))
+
+(define (add-dir-entry! dir entry)
+  (set-dir-entries! dir (cons entry (dir-entries dir)))
+  (set-dir-size! dir (+ (dir-or-file-size entry) (dir-size dir))))
 
 (define (sort-dir-entries! dir)
   (set-dir-entries! dir (sort! (dir-entries dir)
@@ -106,41 +107,36 @@ $ ls
 ;; Command interpreter
 
 (define (build-filesystem-tree cmds)
-  (let ((root (make-dir "/")))
-    (let loop ((cmds cmds) (root root) (pwd '()))
-      (match cmds
-        (()
-         (match pwd
-           ((root)
-            root)
-           ((dir . _)
-            ;; pretend we got "cd .." up to root
-            (loop '((command-cd "..")) root pwd))))
-        (('command-ls . rest)
-         (loop rest root pwd))
-        ((('command-cd "/") . rest)
-         (loop rest root (cons root pwd)))
-        ((('command-cd "..") . rest)
-         (let ((dir (car pwd))
-               (parent (cadr pwd)))
-           ;; add sub-directory size to parent
-           (add-dir-size! parent (dir-size dir))
-           (sort-dir-entries! dir)
-           (loop rest root (cdr pwd))))
-        ((('command-cd name) . rest)
-         (let ((parent (car pwd))
-               (dir (make-dir name)))
-           (add-dir-entry! parent dir)
-           (loop rest root (cons dir pwd))))
-        ((('output-dir name) . rest)
-         (loop rest root pwd))
-        ((('output-file ('filesize size) ('filename name)) . rest)
-         (let ((parent (car pwd))
-               (file (make-file name (string->number size))))
-           ;; add file size to current directory
-           (add-dir-entry! parent file)
-           (add-dir-size! parent (file-size file))
-           (loop rest root pwd)))))))
+  (let loop ((cmds cmds) (path '()))
+    (match cmds
+      (() (match path
+            ((root) root)
+            ((dir . _)
+             ;; pretend we got "cd .." up to root
+             (loop '((command-cd "..")) path))))
+      ((('command-cd "..") . cmds)
+       ;; pop directory from path, add to parent
+       (let* ((dir (car path))
+              (path (cdr path))
+              (parent (car path)))
+         (sort-dir-entries! dir)
+         (add-dir-entry! parent dir)
+         (loop cmds path)))
+      ((('command-cd name) . cmds)
+       ;; push directory onto path
+       (let* ((dir (make-dir name))
+              (path (cons dir path)))
+         (loop cmds path)))
+      (('command-ls . cmds)
+       (loop cmds path))
+      ((('output-dir _) . cmds)
+       (loop cmds path))
+      ((('output-file ('filesize size) ('filename name)) . cmds)
+       ;; add file to current directory
+       (let ((parent (car path))
+             (file (make-file name (string->number size))))
+         (add-dir-entry! parent file)
+         (loop cmds path))))))
 
 (define (filesystem-tree-fold proc init tree)
   (let loop ((items (list tree)) (result init))
