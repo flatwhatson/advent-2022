@@ -154,13 +154,23 @@ $ ls
 
 ;;; Solutions
 
+(define (find-dirs-under size tree)
+  (filesystem-tree-fold
+   (lambda (item result)
+     (if (and (dir? item) (<= (dir-size item) size))
+         (cons item result)
+         result))
+   '() tree))
+
 (define (puzzle-0)
   (let* ((commands (parse-terminal-output %example))
          (tree (build-filesystem-tree commands))
-         (dirs (filesystem-tree-fold
-                (lambda (item result)
-                  (if (and (dir? item) (<= (dir-size item) 100000))
-                      (cons item result)
-                      result))
-                '() tree)))
+         (dirs (find-dirs-under 100000 tree)))
+    (apply + (map dir-size dirs))))
+
+(define (puzzle-1)
+  (let* ((input (call-with-input-file "data/input-07" get-string-all))
+         (commands (parse-terminal-output input))
+         (tree (build-filesystem-tree commands))
+         (dirs (find-dirs-under 100000 tree)))
     (apply + (map dir-size dirs))))
