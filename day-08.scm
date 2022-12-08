@@ -78,10 +78,11 @@
    (= x 0) (= x (1- (grid-cols grid)))
    (= y 0) (= y (1- (grid-rows grid)))
    ;; visible when adjacent is visible and shorter
-   (let* ((height (grid-ref grid x y))
-          (shorter? (lambda (c) (char<? c height))))
+   (let ((height (grid-ref grid x y)))
      (any (lambda (direction)
-            (every shorter? (grid-line-ref grid x y direction)))
+            (every (lambda (c)
+                     (char<? c height))
+                   (grid-line-ref grid x y direction)))
           '(north east south west)))))
 
 (define (count-visible grid)
@@ -89,3 +90,7 @@
 
 (define (puzzle-0)
   (count-visible (make-grid %example)))
+
+(define (puzzle-1)
+  (count-visible (make-grid (call-with-input-file "data/input-08"
+                              get-string-all))))
