@@ -50,6 +50,12 @@
                               n))
                         0 grid))
 
+(define (grid-coordinate-map proc grid)
+  (reverse (grid-coordinate-fold
+            (lambda (grid x y ls)
+              (cons (proc grid x y) ls))
+            '() grid)))
+
 (define (grid-line-ref grid x y direction)
   (define next-x (case direction
                    ((west) 1-)
@@ -67,16 +73,20 @@
   (let loop ((x (next-x x))
              (y (next-y y))
              (result '()))
-    (if (done? x y) result
+    (if (done? x y)
+        (reverse result)
         (loop (next-x x)
               (next-y y)
               (cons (grid-ref grid x y) result)))))
 
+(define (is-edge? grid x y)
+  (or (= x 0) (= x (1- (grid-cols grid)))
+      (= y 0) (= y (1- (grid-rows grid)))))
+
 (define (is-visible? grid x y)
   (or
    ;; edges are always visible
-   (= x 0) (= x (1- (grid-cols grid)))
-   (= y 0) (= y (1- (grid-rows grid)))
+   (is-edge? grid x y)
    ;; visible when adjacent is visible and shorter
    (let ((height (grid-ref grid x y)))
      (any (lambda (direction)
@@ -84,6 +94,23 @@
                      (char<? c height))
                    (grid-line-ref grid x y direction)))
           '(north east south west)))))
+
+(define (count-trees height trees)
+  (let loop ((trees trees) (count 0))
+    (cond ((null? trees)
+           count)
+          ((char>=? (car trees) height)
+           (1+ count))
+          (else
+           (loop (cdr trees) (1+ count))))))
+
+(define (scenic-score grid x y)
+  (if (is-edge? grid x y) 0
+      (let ((height (grid-ref grid x y)))
+        (apply * (map (lambda (direction)
+                        (let ((trees (grid-line-ref grid x y direction)))
+                          (count-trees height trees)))
+                      '(north east south west))))))
 
 (define (count-visible grid)
   (grid-coordinate-count is-visible? grid))
@@ -94,3 +121,9 @@
 (define (puzzle-1)
   (count-visible (make-grid (call-with-input-file "data/input-08"
                               get-string-all))))
+
+(define (puzzle-2)
+  (apply max (grid-coordinate-map
+              scenic-score (make-grid
+                            (call-with-input-file "data/input-08"
+                              get-string-all)))))
