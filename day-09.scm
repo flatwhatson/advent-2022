@@ -77,3 +77,11 @@ R 2
                                 (cons tail result))
                               '() moves)))
     (length (delete-duplicates tails equal?))))
+
+(define (puzzle-1)
+  (let* ((moves (parse-motions (call-with-input-file "data/input-09"
+                                 get-string-all)))
+         (tails (fold-motions (lambda (head tail result)
+                                (cons tail result))
+                              '() moves)))
+    (length (delete-duplicates tails equal?))))
