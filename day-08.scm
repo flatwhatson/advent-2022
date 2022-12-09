@@ -43,13 +43,6 @@
             (else
              (loop (1+ x) y (proc grid x y result)))))))
 
-(define (grid-coordinate-count pred grid)
-  (grid-coordinate-fold (lambda (grid x y n)
-                          (if (pred grid x y)
-                              (1+ n)
-                              n))
-                        0 grid))
-
 (define (grid-coordinate-map proc grid)
   (reverse (grid-coordinate-fold
             (lambda (grid x y ls)
@@ -87,7 +80,7 @@
   (or
    ;; edges are always visible
    (is-edge? grid x y)
-   ;; visible when adjacent is visible and shorter
+   ;; visible when every tree in a direction is shorter
    (let ((height (grid-ref grid x y)))
      (any (lambda (direction)
             (every (lambda (c)
@@ -112,15 +105,15 @@
                           (count-trees height trees)))
                       '(north east south west))))))
 
-(define (count-visible grid)
-  (grid-coordinate-count is-visible? grid))
-
 (define (puzzle-0)
-  (count-visible (make-grid %example)))
+  (count values (grid-coordinate-map
+                 is-visible? (make-grid %example))))
 
 (define (puzzle-1)
-  (count-visible (make-grid (call-with-input-file "data/input-08"
-                              get-string-all))))
+  (count values (grid-coordinate-map
+                 is-visible? (make-grid
+                              (call-with-input-file "data/input-08"
+                                get-string-all)))))
 
 (define (puzzle-2)
   (apply max (grid-coordinate-map
