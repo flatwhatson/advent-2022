@@ -50,27 +50,32 @@
             '() grid)))
 
 (define (grid-line-ref grid x y direction)
-  (define next-x (case direction
-                   ((west) 1-)
-                   ((east) 1+)
-                   (else values)))
-  (define next-y (case direction
-                   ((north) 1-)
-                   ((south) 1+)
-                   (else values)))
-  (define done? (case direction
-                  ((west) (lambda (x y) (< x 0)))
-                  ((east) (lambda (x y) (= x (grid-cols grid))))
-                  ((north) (lambda (x y) (< y 0)))
-                  ((south) (lambda (x y) (= y (grid-rows grid))))))
-  (let loop ((x (next-x x))
-             (y (next-y y))
-             (result '()))
-    (if (done? x y)
-        (reverse result)
-        (loop (next-x x)
-              (next-y y)
-              (cons (grid-ref grid x y) result)))))
+  (define data (grid-data grid))
+  (define 1row (1+ (grid-cols grid)))
+  (define count
+    ;; cells between the edge and x,y
+    (case direction
+      ((north) y)
+      ((east) (- (grid-cols grid) x 1))
+      ((south) (- (grid-rows grid) y 1))
+      ((west) x)))
+  (define step
+    ;; step from the edge towards x,y
+    (case direction
+      ((north) 1row)
+      ((east) -1)
+      ((south) (- 1row))
+      ((west) 1)))
+  (define start
+    ;; start from the edge
+    (+ (grid-index grid x y)
+       (* count (- step))))
+  (let loop ((ix start) (count count) (result '()))
+    (if (zero? count)
+        result
+        (loop (+ ix step)
+              (1- count)
+              (cons (string-ref data ix) result)))))
 
 (define (is-edge? grid x y)
   (or (= x 0) (= x (1- (grid-cols grid)))
