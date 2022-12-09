@@ -89,10 +89,10 @@ R 2
 
 (define (count-unique-points moves num-points)
   (length (fold-motions (lambda (tail result)
-                                (if (not (member tail result))
-                                    (cons tail result)
-                                    result))
-                              '() moves num-points)))
+                          (if (not (member tail result))
+                              (cons tail result)
+                              result))
+                        '() moves num-points)))
 
 (define (puzzle-0)
   (let ((moves (parse-motions %example))
