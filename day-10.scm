@@ -187,6 +187,18 @@ noop
                       sum))
                 0 program))
 
+(define (display-pixels program)
+  (fold-program (lambda (cycle regx _)
+                  (let ((pixel (modulo (1- cycle) 40)))
+                    (if (or (= pixel regx)
+                            (= pixel (1- regx))
+                            (= pixel (1+ regx)))
+                        (display #\#)
+                        (display #\.))
+                    (when (= pixel 39)
+                      (newline))))
+                #t program))
+
 (define (puzzle-0)
   (sum-strengths 20 40 (parse-program %example-long)))
 
@@ -194,3 +206,8 @@ noop
   (sum-strengths 20 40 (parse-program
                         (call-with-input-file "data/input-10"
                           get-string-all))))
+
+(define (puzzle-2)
+  (display-pixels (parse-program
+                   (call-with-input-file "data/input-10"
+                     get-string-all))))
