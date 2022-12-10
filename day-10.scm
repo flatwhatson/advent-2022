@@ -189,3 +189,8 @@ noop
 
 (define (puzzle-0)
   (sum-strengths 20 40 (parse-program %example-long)))
+
+(define (puzzle-1)
+  (sum-strengths 20 40 (parse-program
+                        (call-with-input-file "data/input-10"
+                          get-string-all))))
