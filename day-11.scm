@@ -173,3 +173,8 @@ Monkey 3:
 (define (puzzle-0)
   (count-inspections 20 (build-monkeys
                          (parse-monkeys %example))))
+
+(define (puzzle-1)
+  (count-inspections 20 (build-monkeys
+                         (parse-monkeys (call-with-input-file "data/input-11"
+                                          get-string-all)))))
